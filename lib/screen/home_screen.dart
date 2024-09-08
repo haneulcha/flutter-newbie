@@ -1,38 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
 
-class HomeScreen extends StatelessWidget {
-  final WebViewController webViewController = WebViewController()
-    ..loadRequest(Uri.parse('https://blog.haneulcha.com/'))
-    ..setJavaScriptMode(JavaScriptMode.unrestricted);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
-  HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timer.periodic(Duration(seconds: 3), (timer) {
+      print('Timer is running');
+
+      int? nextPage = _pageController.page?.toInt();
+      if (nextPage == 2) {
+        nextPage = 0;
+      } else {
+        nextPage = nextPage! + 1;
+      }
+      _pageController.animateToPage(nextPage, duration: Duration(milliseconds: 300), curve: Curves.easeIn);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ));
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue[100],
-        title: const Text('Home Screen'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () {
-              webViewController.loadRequest(Uri.parse('https://blog.haneulcha.com/'));
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              webViewController.goBack();
-            },
-          ),
-        ],
-      ),
-      body: WebViewWidget(
-        controller: webViewController,
-      ),
-    );
+        body: PageView(
+      controller: _pageController,
+      children: [1, 2, 3].map((number) => Image.asset('asset/img/dj_$number.jpeg', fit: BoxFit.cover)).toList(),
+    ));
   }
 }
